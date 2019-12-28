@@ -9,7 +9,7 @@ public class ServidorHilo extends Thread{
     private DataOutputStream salida;
     private DataInputStream entrada;
     
-    private Connection conexionBD;
+    private Connection conexionBD = null;
     
     private String dominio, usuario, password;
 
