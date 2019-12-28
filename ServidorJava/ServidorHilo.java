@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.sql.*;
 
 public class ServidorHilo extends Thread{
 
@@ -7,13 +8,17 @@ public class ServidorHilo extends Thread{
 
     private DataOutputStream salida;
     private DataInputStream entrada;
+    
+    private Connection conexionBD;
+    
+    private String dominio, usuario, password;
 
-    private int idSesion;
-
-    public ServidorHilo(Socket socket, int id) {
+    public ServidorHilo(Socket socket) {
 
         this.conexion = socket;
-        this.idSesion = id;
+        this.dominio = "jdbc:mysql://localhost/prueba"; //Cambiar el dominio en funcion del nombre de la base de datos
+        this.usuario = "root";
+        this.password = "WeatherStationUbicua2019"; 
 
         try {
 
@@ -22,7 +27,7 @@ public class ServidorHilo extends Thread{
 
         } catch (IOException ex) {
 
-            System.out.println("Error: "+ex.getMessage());
+            System.out.println("ErrorIO: "+ex.getMessage());
         }
     }
 
@@ -33,7 +38,7 @@ public class ServidorHilo extends Thread{
 
         } catch (IOException ex) {
 
-            System.out.println("Error: "+ex.getMessage());
+            System.out.println("ErrorIO: "+ex.getMessage());
         }
     }
 
@@ -45,18 +50,53 @@ public class ServidorHilo extends Thread{
         try {
 
             parametros = entrada.readUTF();
+            
+            String[] tokens = parametros.split("-");
+            
+            System.out.println(tokens[0]+tokens[1]);
         
             //Aqui veriamos el id de la estacion para realizar la consulta en la base de datos y devolver el JSON
-            if(parametros.startsWith("Refresh")){
-
+            if(tokens[0].equals("Refresh")){
+                
+                try{
+                    conectarBD();
+                    salida.writeUTF(refreshDatos(tokens[1]));
+                    desconectarBD();
+                }catch(SQLException ex){                  
+                    System.out.println("ErrorSQL: "+ ex.getMessage());
+                }
             }
             //Aqui pondriamos más posibles acciones que puede ejecutar el servidor por ejemplo actualización de tablas...
 
         } catch (IOException ex) {
 
-            System.out.println("Error: "+ex.getMessage());
+            System.out.println("ErrorIO: "+ex.getMessage());
         }
 
         desconectar();
     }
+    
+    public void conectarBD() throws SQLException{
+            
+        conexionBD = DriverManager.getConnection(dominio, usuario, password);
+    }    
+    
+    public void desconectarBD() throws SQLException{
+        
+        conexionBD.close();
+    }
+    
+    public String refreshDatos(String nombreEstacion) throws SQLException{
+        
+        Statement estado = conexionBD.createStatement();
+        ResultSet consulta = estado.executeQuery("select * from tabla where id = "+nombreEstacion); //Cambiar segun la base de datos
+        
+        String resultado = "";
+        while(consulta.next()){
+            resultado += consulta.getString(1) + "\n";
+        }
+        
+        return resultado;
+    }
 }
+

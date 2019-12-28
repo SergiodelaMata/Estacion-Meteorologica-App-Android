@@ -22,7 +22,8 @@ class ClienteID extends Thread{
 
         try{
 
-            cliente = new Socket("weatherubicuastation.duckdns.org", 8080);
+            //cliente = new Socket("weatherubicuastation.duckdns.org", 8080);
+            cliente = new Socket(InetAddress.getLocalHost(),8080);
             
             entrada = new DataInputStream(cliente.getInputStream());
             salida = new DataOutputStream(cliente.getOutputStream());
