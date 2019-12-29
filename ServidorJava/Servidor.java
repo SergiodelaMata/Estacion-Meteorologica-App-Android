@@ -19,14 +19,14 @@ public class Servidor{
                 conexion = servidor.accept();
                 System.out.println("\t[OK]");
 
-                System.out.println("Nueva conexión entrante: "+conexion);
+                System.out.println("Nueva conexión entrante: " + conexion);
 
                 ((ServidorHilo) new ServidorHilo(conexion)).start();
 
             }
         } catch (IOException ex) {
 
-            System.out.println("Error: "+ex.getMessage());
+            System.out.println("ErrorIO: "+ex.getMessage());
         }
     }
 }

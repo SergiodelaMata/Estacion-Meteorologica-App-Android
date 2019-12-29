@@ -32,7 +32,8 @@ class ClienteID extends Thread{
             salida.writeUTF(mensaje);
 
             respuesta = entrada.readUTF(); //Seria el archivo JSON enviado por el server
-
+            System.out.println(respuesta);
+            
             entrada.close();
             salida.close();
             cliente.close();

@@ -9,14 +9,14 @@ public class ServidorHilo extends Thread{
     private DataOutputStream salida;
     private DataInputStream entrada;
     
-    private Connection conexionBD = null;
+    private Connection conexionBD;
     
     private String dominio, usuario, password;
 
     public ServidorHilo(Socket socket) {
 
         this.conexion = socket;
-        this.dominio = "jdbc:mysql://localhost/estacion_meteorologica_inteligente"; //Cambiar el dominio en funcion del nombre de la base de datos
+        this.dominio = "jdbc:mysql://localhost:3306/estacion_meteorologica_inteligente"; //Cambiar el dominio en funcion del nombre de la base de datos
         this.usuario = "root";
         this.password = "WeatherStationUbicua2019"; 
 
@@ -24,10 +24,15 @@ public class ServidorHilo extends Thread{
 
             salida = new DataOutputStream(conexion.getOutputStream());
             entrada = new DataInputStream(conexion.getInputStream());
+            
+            Class.forName("com.mysql.jdbc.Driver");
 
         } catch (IOException ex) {
 
             System.out.println("ErrorIO: "+ex.getMessage());
+        } catch (ClassNotFoundException ex) {
+            
+            System.out.println("ErrorCNF: "+ex.getMessage());
         }
     }
 
@@ -60,9 +65,10 @@ public class ServidorHilo extends Thread{
                 
                 try{
                     conectarBD();
-                    salida.writeUTF(refreshDatos(tokens[1]));
+                    String mensaje = refreshDatos(tokens[1]);
+                    System.out.println(mensaje);
+                    salida.writeUTF(mensaje);
                     desconectarBD();
-
                 }catch(SQLException ex){                  
                     System.out.println("ErrorSQL: "+ ex.getMessage());
                 }
@@ -94,15 +100,27 @@ public class ServidorHilo extends Thread{
         
         String resultado = "";
         while(consulta.next()){
-
-            if(consulta.getString(1)!=null){
-                resultado += consulta.getString(1) + "\n";
-            }else{
-                resultado += "NULL \n";
+            
+            for(int i=1; i<=14; i++){
+                //Los ifs de dentro hacen que la ultima columna de la consulta no tenga el caracter separador
+                if(consulta.getString(i)!=null){
+                    if(i==14){
+                        resultado += consulta.getString(i);
+                    }else{
+                        resultado += consulta.getString(i) + "$";
+                    }
+                }else{
+                    if(i==14){
+                        resultado += "NULL";
+                    }else{
+                        resultado += "NULL$";
+                    }
+                }
             }
+            
+            resultado += "\n";
         }
         
         return resultado;
     }
 }
-
