@@ -93,7 +93,12 @@ public class ServidorHilo extends Thread{
         
         String resultado = "";
         while(consulta.next()){
-            resultado += consulta.getString(1) + "\n";
+            
+            if(consulta.getString(1)!=null){
+                resultado += consulta.getString(1) + "\n";
+            }else{
+                resultado += "NULL \n";
+            }
         }
         
         return resultado;
