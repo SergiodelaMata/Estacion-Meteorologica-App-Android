@@ -16,7 +16,7 @@ public class ServidorHilo extends Thread{
     public ServidorHilo(Socket socket) {
 
         this.conexion = socket;
-        this.dominio = "jdbc:mysql://localhost/prueba"; //Cambiar el dominio en funcion del nombre de la base de datos
+        this.dominio = "jdbc:mysql://localhost/estacion_meteorologica_inteligente"; //Cambiar el dominio en funcion del nombre de la base de datos
         this.usuario = "root";
         this.password = "WeatherStationUbicua2019"; 
 
@@ -62,6 +62,7 @@ public class ServidorHilo extends Thread{
                     conectarBD();
                     salida.writeUTF(refreshDatos(tokens[1]));
                     desconectarBD();
+
                 }catch(SQLException ex){                  
                     System.out.println("ErrorSQL: "+ ex.getMessage());
                 }
@@ -89,11 +90,11 @@ public class ServidorHilo extends Thread{
     public String refreshDatos(String nombreEstacion) throws SQLException{
         
         Statement estado = conexionBD.createStatement();
-        ResultSet consulta = estado.executeQuery("select * from tabla where id = "+nombreEstacion); //Cambiar segun la base de datos
+        ResultSet consulta = estado.executeQuery("select * from datos_recabados"); //Cambiar segun la base de datos
         
         String resultado = "";
         while(consulta.next()){
-            
+
             if(consulta.getString(1)!=null){
                 resultado += consulta.getString(1) + "\n";
             }else{
