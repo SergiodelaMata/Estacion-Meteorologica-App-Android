@@ -45,7 +45,7 @@ class ClienteID extends Thread{
     }
 }
 
-public class Cliente{
+public class ClienteBoton{
     public static void main(String[] args) {
         
         ClienteID cliente = new ClienteID("Alcala De Henares"); //El parametro de construccion de ClienteID seria el texto del spinner
