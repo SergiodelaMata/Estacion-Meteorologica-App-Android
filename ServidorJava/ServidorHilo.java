@@ -93,10 +93,10 @@ public class ServidorHilo extends Thread{
         conexionBD.close();
     }
     
-    public String refreshDatos(String nombreEstacion) throws SQLException{
+    public String refreshDatos(String idEstacion) throws SQLException{
         
         Statement estado = conexionBD.createStatement();
-        ResultSet consulta = estado.executeQuery("select * from datos_recabados"); //Cambiar segun la base de datos
+        ResultSet consulta = estado.executeQuery("select * from datos_recabados where ID_Estacion="+Integer.parseInt(idEstacion)); //Cambiar segun la base de datos
         
         String resultado = "";
         while(consulta.next()){
@@ -107,13 +107,13 @@ public class ServidorHilo extends Thread{
                     if(i==14){
                         resultado += consulta.getString(i);
                     }else{
-                        resultado += consulta.getString(i) + "$";
+                        resultado += consulta.getString(i) + "//";
                     }
                 }else{
                     if(i==14){
                         resultado += "NULL";
                     }else{
-                        resultado += "NULL$";
+                        resultado += "NULL//";
                     }
                 }
             }

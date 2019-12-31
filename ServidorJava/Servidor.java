@@ -26,7 +26,7 @@ public class Servidor{
             }
         } catch (IOException ex) {
 
-            System.out.println("ErrorIO: "+ex.getMessage());
+            System.out.println("Error: "+ex.getMessage());
         }
     }
 }

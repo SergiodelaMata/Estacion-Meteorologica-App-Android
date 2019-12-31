@@ -1,8 +1,11 @@
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.Callable;
+
+import static java.lang.Thread.sleep;
 
 
-class ClienteID extends Thread{
+public class ClienteAutomatico implements Callable<String> {
 
     Socket cliente;
 
@@ -13,50 +16,43 @@ class ClienteID extends Thread{
 
     private String idConexion;
 
-    public ClienteID(String id){
+    public ClienteAutomatico(String id){
         this.idConexion = id;
+        this.respuesta = "NULL";
     }
 
     @Override
-    public void run(){
+    public String call(){
 
-        while(true){
-            try{
+        try{
 
-                cliente = new Socket("weatherubicuastation.duckdns.org", 8080);
-                
-                entrada = new DataInputStream(cliente.getInputStream());
-                salida = new DataOutputStream(cliente.getOutputStream());
-    
-                mensaje = "Refresh-"+this.idConexion; 
-    
-                salida.writeUTF(mensaje);
-    
-                respuesta = entrada.readUTF(); //Seria el archivo JSON enviado por el server
-                System.out.println(respuesta);
-                
-                entrada.close();
-                salida.close();
-                cliente.close();
-
+            try {
                 sleep(180000);
-                
-            }catch(IOException ex){
-    
-                System.out.println("ErrorIO: "+ex.getMessage());
-            }catch(InterruptedException ex){
-                System.out.println("ErrorIE: "+ex.getMessage());
+            } catch (InterruptedException e) {
+                System.out.println("ErrorIE: "+ e.getMessage());
             }
-        }
+
+            cliente = new Socket("weatherubicuastation.duckdns.org", 8080);
+
+            entrada = new DataInputStream(cliente.getInputStream());
+            salida = new DataOutputStream(cliente.getOutputStream());
+
+            mensaje = "Refresh-"+this.idConexion;
+
+            salida.writeUTF(mensaje);
+
+            respuesta = entrada.readUTF();
+            System.out.println(respuesta);
+
+            entrada.close();
+            salida.close();
+            cliente.close();
+
+        }catch(IOException e){
+
+            System.out.println("Error: "+e.getMessage());
         }
 
-}
-
-public class ClienteAutomatico{
-    public static void main(String[] args) {
-        
-        ClienteID cliente = new ClienteID("Alcala De Henares"); //El parametro de construccion de ClienteID seria el texto del spinner
-                                                                //ya sea latitud-longitud o el id de la estacion
-        cliente.start();
+        return respuesta;
     }
 }
