@@ -72,6 +72,26 @@ public class ServidorHilo extends Thread{
                 }catch(SQLException ex){                  
                     System.out.println("ErrorSQL: "+ ex.getMessage());
                 }
+            }else if(tokens[0].equals("HistoricHigh")){
+                try {
+                    conectarBD();
+                    String mensaje = historicInformationHigh(tokens[1]);
+                    System.out.println("Dato de "+ tokens[1] +" más alto resigtrado "+mensaje);
+                    salida.writeUTF(mensaje);
+                    desconectarBD();
+                } catch (SQLException ex) {
+                    System.out.println("ErrorSQL: "+ ex.getMessage());
+                }
+            }else if(tokens[0].equals("HistoricLow")){
+                try {
+                    conectarBD();
+                    String mensaje = historicInformationLow(tokens[1]);
+                    System.out.println("Dato de "+ tokens[1] +" más bajo resigtrado "+mensaje);
+                    salida.writeUTF(mensaje);
+                    desconectarBD();
+                } catch (SQLException ex) {
+                    System.out.println("ErrorSQL: "+ ex.getMessage());
+                }
             }
             //Aqui pondriamos más posibles acciones que puede ejecutar el servidor por ejemplo actualización de tablas...
 
@@ -93,10 +113,34 @@ public class ServidorHilo extends Thread{
         conexionBD.close();
     }
     
+    public String historicInformationHigh(String dato) throws SQLException{
+        
+        Statement estado = conexionBD.createStatement();
+        ResultSet consulta = estado.executeQuery("select MAX("+ dato +") from datos_recabado");
+        
+        String resultado = "";
+        
+        resultado = consulta.getString(1);
+        
+        return resultado;
+    }
+    
+    public String historicInformationLow(String dato) throws SQLException{
+        
+        Statement estado = conexionBD.createStatement();
+        ResultSet consulta = estado.executeQuery("select MIN("+ dato +") from datos_recabado");
+        
+        String resultado = "";
+        
+        resultado = consulta.getString(1);
+        
+        return resultado;
+    }
+    
     public String refreshDatos(String idEstacion) throws SQLException{
         
         Statement estado = conexionBD.createStatement();
-        ResultSet consulta = estado.executeQuery("select * from datos_recabados where ID_Estacion="+Integer.parseInt(idEstacion)); //Cambiar segun la base de datos
+        ResultSet consulta = estado.executeQuery("select * from datos_recabados where ID_Estacion="+Integer.parseInt(idEstacion)+" limit "+ 1); //Cambiar segun la base de datos
         
         String resultado = "";
         while(consulta.next()){
