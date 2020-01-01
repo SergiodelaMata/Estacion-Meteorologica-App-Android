@@ -116,11 +116,13 @@ public class ServidorHilo extends Thread{
     public String historicInformationHigh(String dato) throws SQLException{
         
         Statement estado = conexionBD.createStatement();
-        ResultSet consulta = estado.executeQuery("select MAX("+ dato +") from datos_recabado");
+        ResultSet consulta = estado.executeQuery("select MAX("+ dato +") from datos_recabados");
         
         String resultado = "";
         
-        resultado = consulta.getString(1);
+        while(consulta.next()){
+            resultado = consulta.getString(1);
+        }
         
         return resultado;
     }
@@ -128,11 +130,13 @@ public class ServidorHilo extends Thread{
     public String historicInformationLow(String dato) throws SQLException{
         
         Statement estado = conexionBD.createStatement();
-        ResultSet consulta = estado.executeQuery("select MIN("+ dato +") from datos_recabado");
+        ResultSet consulta = estado.executeQuery("select MIN("+ dato +") from datos_recabados");
         
         String resultado = "";
         
-        resultado = consulta.getString(1);
+        while(consulta.next()){
+            resultado = consulta.getString(1);
+        }
         
         return resultado;
     }
