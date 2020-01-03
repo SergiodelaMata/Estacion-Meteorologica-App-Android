@@ -3,6 +3,7 @@ package com.example.mainactivity;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TableLayout;
 
 import java.util.ArrayList;
@@ -14,35 +15,52 @@ public class MainActivity extends AppCompatActivity {
     private TableLayout tableLayout;
     private String[] header = Singleton.getInstance().getHeaderMainActivity();
     private ArrayList<String[]> rows;
+    private HiloMainActivity hiloRefresh;
+    private HiloMainActivity hiloNotify;
+    private Monitor monitor;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Singleton.getInstance().setEndConnectionThread(false);
         tableLayout = findViewById(R.id.tableestaciones);
         rows = new ArrayList<>();
-        DynamicTable dynamicTable = new DynamicTable(MainActivity.this, tableLayout, getApplicationContext());
+        this.monitor = new Monitor();
+        DynamicTable dynamicTable = new DynamicTable(MainActivity.this, tableLayout, getApplicationContext(), monitor);
         dynamicTable.addHeader(header);
         dynamicTable.addData(getData());
-
+        this.hiloRefresh = new HiloMainActivity(String.valueOf(getNumberStations()), "RefreshTable", monitor,dynamicTable, MainActivity.this);
+        this.hiloNotify = new HiloMainActivity(String.valueOf(getNumberStations()), "NotifyAll", monitor, dynamicTable, MainActivity.this);
+        this.hiloRefresh.start();
+        //this.hiloNotify.start();
     }
 
-    private ArrayList<String[]> getData()
+    public  ArrayList<String[]> getData()
     {
+        Singleton.getInstance().setCounterStations(getNumberStations());
         String respuesta = resultadoRefresh();
-
-        rows.add(new String[]{"1", "233'23\"45'34\"", "28ºC", "Soleado", "20Pa"});
-        rows.add(new String[]{"2", "23'23\"45'34\"", "34ºC", "Nublado", "20Pa"});
-        rows.add(new String[]{"3", "33'23\"45'34\"", "40ºC", "Lluvioso", "20Pa"});
-        rows.add(new String[]{"4", "263'23\"45'34\"", "50ºC", "Noche", "20Pa"});
-        rows.add(new String[]{"5", "133'23\"45'34\"", "20ºC", "Soleado", "20Pa"});
+        //Log.e("HEY", respuesta);
+        String[] listaFilas = respuesta.split("\n");
+        for(int i = 0; i < listaFilas.length; i++)
+        {
+            rows.add (listaFilas[i].split("//"));
+        }
         return rows;
     }
 
-    public String resultadoRefresh() {
+    public ArrayList<String[]> getRows() {
+        return rows;
+    }
 
-        FutureTask task = new FutureTask(new Cliente("Refresh"));
+    public void setRows(ArrayList<String[]> rows) {
+        this.rows = rows;
+    }
+
+    private String resultadoRefresh() {
+
+        FutureTask task = new FutureTask(new Cliente(String.valueOf(Singleton.getInstance().getCounterStations()), "RefreshTable"));
 
         ExecutorService es = Executors.newSingleThreadExecutor();
         es.submit(task);
@@ -61,4 +79,28 @@ public class MainActivity extends AppCompatActivity {
 
         return result;
     }
+
+    public int getNumberStations() {
+
+        FutureTask task = new FutureTask(new Cliente("Stations"));
+
+        ExecutorService es = Executors.newSingleThreadExecutor();
+        es.submit(task);
+
+        String result = "NULL";
+
+        try {
+
+            result = task.get().toString();
+
+        } catch (Exception e) {
+
+            System.err.println(e);
+        }
+
+        es.shutdown();
+        return Integer.parseInt(result);
+    }
+
+
 }
